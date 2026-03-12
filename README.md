@@ -1,64 +1,48 @@
-# My-bedrock-agents-wrappers
-./create_project_kb.sh projectA your-project-a-bucket-2222323
+# KB Context Switcher
 
-./switch_project.sh 
+Multi-tenant knowledge base manager for AWS Bedrock agents. Manages project isolation by dynamically switching between S3-backed data sources within a single knowledge base.
 
-./switch_project.sh projectA
+## Usage
 
-## 1. create_project_kb.sh
-Purpose: Set up a new project with its own S3 bucket and data source
+```bash
+./kb-context-switcher.sh
+```
 
-What it does:
-- Creates an S3 bucket for the project (if it doesn't exist)
-- Enables versioning on the bucket
-- Adds the bucket as a data source to the generic knowledge base
-- Starts initial ingestion of documents
-- Idempotent (safe to run multiple times)
+## Requirements
 
-Usage:
-bash
-./create_project_kb.sh projectA my-project-a-bucket
+- AWS CLI configured with appropriate credentials
+- `fzf` installed: `sudo apt install fzf`
+- `.env` file with AWS configuration (see `.env` for details)
 
+## Features
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Create New Project**
+- Creates S3 bucket with versioning
+- Adds bucket as data source to knowledge base
+- Starts initial document ingestion
 
+**Switch Project**
+- Fuzzy search through available projects
+- Syncs selected project's data source
+- Makes project data active for agent queries
 
-## 2. switch_project.sh
-Purpose: Switch the active project context
+**Update Agent Instructions**
+- Select instruction file from `instruction-files/` directory
+- Updates agent DRAFT with project-specific instructions
 
-What it does:
-- Lists all available projects (when run without arguments)
-- Syncs the specified project's data source
-- Makes that project's data the active context for the agent
+**List Projects**
+- Displays all projects with their data source IDs
 
-Usage:
-bash
-# List projects
-./switch_project.sh
+## Architecture
 
-# Switch to projectA
-./switch_project.sh projectA
+The system uses:
+- One knowledge base (configured in `.env`)
+- Multiple S3-backed data sources (one per project)
+- Dynamic context switching via ingestion jobs
 
+## Workflow
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-## 3. create_project_version.sh
-Purpose: Create agent version with project-specific instructions (not fully implemented)
-
-Status: Created but not tested - requires:
-- Project-specific instruction files
-- Manual agent alias creation
-- This was part of the original multi-alias approach
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-
-## Workflow Summary:
-
-1. Add new project: ./create_project_kb.sh projectA bucket-name
+1. Create project → Creates S3 bucket and data source
 2. Upload documents to S3 bucket
-3. Switch context: ./switch_project.sh projectA
-4. Query agent - it will use projectA data
-
-The agent uses one knowledge base (LZE51GHMVX / "cdbac-kb") with multiple data sources, switching between them by syncing the active project.
+3. Switch to project → Syncs data source
+4. Query agent → Uses active project's data
