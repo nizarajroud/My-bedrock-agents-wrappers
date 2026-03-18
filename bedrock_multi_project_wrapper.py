@@ -17,7 +17,7 @@ def query_agent(prompt: str, session_id: str | None = None) -> str:
     
     response = client.invoke_agent(
         agentId=os.getenv('AGENT_ID'),
-        agentAliasId="TSTALIASID",  # Test alias always points to DRAFT
+        agentAliasId=os.getenv('AGENT_ALIAS_ID', 'TSTALIASID'),
         sessionId=session_id,
         inputText=prompt
     )
